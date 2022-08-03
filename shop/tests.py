@@ -1,6 +1,9 @@
 from django.urls import reverse_lazy, reverse
 from rest_framework.test import APITestCase
+
+from shop.mock import ECOSCORE_GRADE, mock_openfond_success
 from shop.models import Category, Product
+from unittest import mock
 
 
 class ShopAPITestCase(APITestCase):
@@ -17,6 +20,17 @@ class ShopAPITestCase(APITestCase):
 
     def format_datetime(self, value):
         return value.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    def get_product_data(self, product):
+        return {
+            'id': product.pk,
+            'name': product.name,
+            'date_created': self.format_datetime(product.date_created),
+            'date_updated': self.format_datetime(product.date_updated),
+            'category': product.category_id,
+            'articles': self.get_article_data(product.articles.filter(active=True)),
+            'ecoscore': ECOSCORE_GRADE
+        }
 
 class TestCategory(ShopAPITestCase):
     url = reverse_lazy('category-list')
@@ -75,3 +89,11 @@ class TestProduct(ShopAPITestCase):
         response = self.client.delete(reverse('product-detail', kwargs={'pk': self.product.pk}))
         self.assertEqual(response.status_code, 405)
         self.product.refresh_from_db()
+
+    @mock.patch('shop.models.Product.call_api', mock_openfond_success)
+    def test_detail(self):
+        response = self.client.get(reverse('product-detail', kwargs={'pk': self.product.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.get_product_detail_data(self.product), response.json())
+
+

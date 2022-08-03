@@ -1,3 +1,4 @@
+import requests
 from django.db import models, transaction
 from rest_framework.decorators import action
 
@@ -23,8 +24,6 @@ class Category(models.Model):
         self.products.update(active=False)
 
 
-
-
 class Product(models.Model):
 
     date_created = models.DateTimeField(auto_now_add=True)
@@ -46,6 +45,15 @@ class Product(models.Model):
         self.active = False
         self.save()
         self.articles.update(active=False)
+
+    def call_api(self, method, url):
+        return requests.request(method, url)
+
+    @property
+    def ecoscore(self):
+        response = self.call_api('GET', 'https://world.openfoodfacts.org/api/v0/product/3229820787015.json')
+        if response.status_code == 200:
+            return response.json()['product']['ecoscore_grade']
 
 
 class Article(models.Model):
