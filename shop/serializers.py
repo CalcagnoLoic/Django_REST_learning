@@ -3,7 +3,7 @@ from shop.models import Category, Product, Article
 from rest_framework import serializers
 
 
-class ArticleSerializer(ModelSerializer):
+class AdminArticleViewset(ModelSerializer):
     class Meta:
         model = Article
         fields = ['id', 'date_created', 'date_updated', 'name', 'price', 'product']
@@ -47,3 +47,17 @@ class CategoryDetailSerializer(serializers.ModelSerializer):
         return serializer.data
 
 
+class CategoryListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'date_created', 'date_updated', 'name']
+
+    def validate_name(self, value):
+        if Category.objects.filter(name=value).exists():
+            raise serializers.ValidationError('Cette catégorie existe déjà!')
+        return value
+
+    def validate(self, data):
+        if data['name'] not in data['description']:
+            raise serializers.ValidationError('Les noms doivent posséder une description!')
+        return data

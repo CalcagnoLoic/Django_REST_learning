@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from shop.models import Category, Product, Article
-from shop.serializers import ArticleSerializer, CategoryDetailSerializer, CategoryListSerializer, \
-    ProductListSerializer, ProductDetailSerializer
+from shop.serializers import CategoryDetailSerializer, CategoryListSerializer, \
+    ProductListSerializer, ProductDetailSerializer, AdminArticleViewset
 
 
 class MultipleSerializerMixin:
@@ -47,7 +47,7 @@ class ProductViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
 
 
 class ArticleViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
-    serializer_class = ArticleSerializer
+    serializer_class = AdminArticleViewset
 
     def get_queryset(self):
         queryset = Article.objects.filter(active=True)
@@ -55,3 +55,11 @@ class ArticleViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
         if article_id is not None:
             queryset = queryset.filter(article_id=article_id)
         return queryset
+
+
+class AdminCategoryViewset(MultipleSerializerMixin, ModelViewSet):
+    serializer_class = CategoryListSerializer
+    detail_serializer_class = CategoryDetailSerializer
+
+    def get_queryset(self):
+        return Category.objects.all()
