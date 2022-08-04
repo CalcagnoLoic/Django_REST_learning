@@ -8,5 +8,6 @@
   
 </p>
 
-The aim of this project is to understand and use the package `django_rest_framework`.!
+The aim of this project is to understand and use the package `django_rest_framework`.
+
 ![](api.png)
